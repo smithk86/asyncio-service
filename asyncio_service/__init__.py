@@ -15,8 +15,11 @@ if sys.version_info < __MIN_PYTHON__:
 
 
 class AsyncioService(object):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name=None):
+        if name:
+            self.name = name
+        else:
+            self.name = __name__
         self._running = None
         self._task = None
 
