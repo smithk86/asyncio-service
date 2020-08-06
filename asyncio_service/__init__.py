@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.0'
-__DATE__ = '2020-07-20'
+__VERSION__ = '1.1'
+__DATE__ = '2020-08-06'
 __MIN_PYTHON__ = (3, 7)
 
 

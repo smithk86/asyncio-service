@@ -14,8 +14,8 @@ from asyncio_service import AsyncioService
 
 
 class _TestAsyncioService(AsyncioService):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name=None):
+        super().__init__(name=name)
         self.close_has_been_called = False
         self.results = list()
 
@@ -30,12 +30,18 @@ class _TestAsyncioService(AsyncioService):
 
 
 @pytest.mark.asyncio
-async def test_service():
+async def test_base():
+    # init
     service = _TestAsyncioService()
     assert service.name == 'asyncio_service'
+    # assert service._task = None
+    assert service._task is None
+    assert service.close_has_been_called is False
     assert service.running() is None
 
+    # start and allow to run
     task = service.start()
+    assert type(service._task) is asyncio.Task
     await asyncio.sleep(3)
 
     # verify it is running
@@ -45,7 +51,15 @@ async def test_service():
     # stop and verify
     await service.stop()
     assert service.running() is False
+    assert service._task is None
     assert task.done() is True
 
+    assert service.close_has_been_called is True
     assert len(service.results) == 12
     assert service.results == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+
+@pytest.mark.asyncio
+async def test_service():
+    service = _TestAsyncioService(name='pytest_service')
+    assert service.name == 'pytest_service'

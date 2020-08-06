@@ -18,8 +18,16 @@ setup(
     version=__VERSION__,
     author='Kyle Smith',
     author_email='smithk86@gmail.com',
+    description='Manage an Asyncio process in a similar way to a standard Thread',
     url='https://github.com/smithk86/asyncio-service',
-    packages=[
-        'asyncio_service'
-    ]
+    packages=['asyncio_service'],
+    license='MIT',
+    python_requires='>=3.7',
+    classifiers=(
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Operating System :: OS Independent",
+        "Framework :: AsyncIO",
+    )
 )
