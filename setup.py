@@ -14,7 +14,7 @@ with open(f'{dir_}/asyncio_service/__init__.py') as fh:
 
 
 setup(
-    name='asycio-service',
+    name='asyncio-service',
     version=__VERSION__,
     author='Kyle Smith',
     author_email='smithk86@gmail.com',
