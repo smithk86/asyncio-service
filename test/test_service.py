@@ -14,7 +14,7 @@ from asyncio_service import AsyncioService
 
 
 class _TestAsyncioService(AsyncioService):
-    def __init__(self, name=None):
+    def __init__(self, *, name=None):
         super().__init__(name=name)
         self.close_has_been_called = False
         self.results = list()

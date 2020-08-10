@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.1.1'
-__DATE__ = '2020-08-07'
+__VERSION__ = '1.1.2-dev'
+__DATE__ = '2020-08-10'
 __MIN_PYTHON__ = (3, 7)
 
 
@@ -15,7 +15,7 @@ if sys.version_info < __MIN_PYTHON__:
 
 
 class AsyncioService(object):
-    def __init__(self, name=None):
+    def __init__(self, *, name=None, **kwargs):
         super().__init__()
         if name:
             self.name = name
