@@ -33,7 +33,7 @@ class _TestAsyncioService(AsyncioService):
 async def test_base():
     # init
     service = _TestAsyncioService()
-    assert service.name == 'asyncio_service'
+    assert service.name == '_TestAsyncioService'
     # assert service._task = None
     assert service._task is None
     assert service.close_has_been_called is False

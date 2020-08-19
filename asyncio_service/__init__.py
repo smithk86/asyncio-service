@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.1.2'
-__DATE__ = '2020-08-10'
+__VERSION__ = '1.1.3-dev'
+__DATE__ = '2020-08-19'
 __MIN_PYTHON__ = (3, 7)
 
 
@@ -20,7 +20,7 @@ class AsyncioService(object):
         if name:
             self.name = name
         else:
-            self.name = __name__
+            self.name = self.__class__.__name__
         self._running = None
         self._task = None
 
