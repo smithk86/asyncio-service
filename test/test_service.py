@@ -29,6 +29,19 @@ class _TestAsyncioService(AsyncioService):
         self.close_has_been_called = True
 
 
+class _TestAsyncioServiceWithException(AsyncioService):
+    def __init__(self, *, name=None):
+        super().__init__(name=name)
+        self.close_has_been_called = False
+        self.results = list()
+
+    async def run(self):
+        raise RuntimeError('forced-exception')
+
+    async def close(self):
+        self.close_has_been_called = True
+
+
 @pytest.mark.asyncio
 async def test_base():
     # init
@@ -63,3 +76,10 @@ async def test_base():
 async def test_service():
     service = _TestAsyncioService(name='pytest_service')
     assert service.name == 'pytest_service'
+
+
+@pytest.mark.asyncio
+async def test_exception():
+    async with _TestAsyncioServiceWithException(name='pytest_service_with_exception') as service:
+        assert service.name == 'pytest_service_with_exception'
+    assert type(service.exception) is RuntimeError

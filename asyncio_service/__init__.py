@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.1.3'
-__DATE__ = '2020-08-19'
+__VERSION__ = '1.2.0-dev'
+__DATE__ = '2020-09-09'
 __MIN_PYTHON__ = (3, 7)
 
 
@@ -23,6 +23,7 @@ class AsyncioService(object):
             self.name = self.__class__.__name__
         self._running = None
         self._task = None
+        self.exception = None
 
     async def __aenter__(self):
         self.start()
@@ -43,13 +44,19 @@ class AsyncioService(object):
             self._running = False
             await self._task
             self._task = None
-            await self.close()
 
     async def run_wrapper(self):
         self._running = True
-        await self.run()
-        self._running = False
-        logger.debug(f'service has stopped: {self.name}')
+        try:
+            await self.run()
+        except Exception as e:
+            logger.exception(e)
+            self.exception = e
+        finally:
+            self._running = False
+            logger.debug(f'closing service: {self.name}')
+            await self.close()
+            logger.debug(f'service has stopped: {self.name}')
 
     @abstractmethod
     async def run(self):
