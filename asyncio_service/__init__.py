@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.2.0'
-__DATE__ = '2020-09-09'
+__VERSION__ = '1.2.1'
+__DATE__ = '2020-09-11'
 __MIN_PYTHON__ = (3, 7)
 
 
@@ -55,7 +55,7 @@ class AsyncioService(object):
         finally:
             self._running = False
             logger.debug(f'closing service: {self.name}')
-            await self.close()
+            await self.cleanup()
             logger.debug(f'service has stopped: {self.name}')
 
     @abstractmethod
@@ -65,5 +65,5 @@ class AsyncioService(object):
     def running(self):
         return self._running
 
-    async def close(self):
+    async def cleanup(self):
         pass
