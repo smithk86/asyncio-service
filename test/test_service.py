@@ -11,6 +11,7 @@ import asyncio
 import pytest
 
 from asyncio_service import AsyncioService
+from timer import Timer
 
 
 class _TestAsyncioService(AsyncioService):
@@ -35,6 +36,18 @@ class _TestAsyncioServiceWithException(AsyncioService):
 
     async def run(self):
         raise RuntimeError('forced-exception')
+
+
+class _TestAsyncioServiceWaitForRunning(AsyncioService):
+    def __init__(self, *, name=None):
+        super().__init__(name=name)
+
+    async def run_wrapper(self):
+        await asyncio.sleep(.5)
+        await super().run_wrapper()
+
+    async def run(self):
+        await asyncio.sleep(.5)
 
 
 @pytest.mark.asyncio
@@ -76,5 +89,17 @@ async def test_service():
 @pytest.mark.asyncio
 async def test_exception():
     async with _TestAsyncioServiceWithException(name='pytest_service_with_exception') as service:
-        assert service.name == 'pytest_service_with_exception'
+        pass
+    assert service.name == 'pytest_service_with_exception'
     assert type(service.exception) is RuntimeError
+
+
+@pytest.mark.asyncio
+async def test_wait_for_running():
+    with Timer(name='service') as t1:
+        async with _TestAsyncioServiceWaitForRunning(name='pytest_service_wait_for_running') as service:
+            with Timer(name='wait_for_running') as t2:
+                await service.wait_for_running()
+            assert t2.seconds >= .5
+    assert t1.seconds >= 1
+    assert service.name == 'pytest_service_wait_for_running'

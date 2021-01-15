@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.2.1'
-__DATE__ = '2020-09-11'
+__VERSION__ = '1.2.2'
+__DATE__ = '2021-01-15'
 __MIN_PYTHON__ = (3, 7)
 
 
@@ -64,6 +64,10 @@ class AsyncioService(object):
 
     def running(self):
         return self._running
+
+    async def wait_for_running(self, interval=0.05):
+        while self.running() is not True:
+            await asyncio.sleep(interval)
 
     async def cleanup(self):
         pass
