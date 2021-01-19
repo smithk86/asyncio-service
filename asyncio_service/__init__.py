@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.2.2'
-__DATE__ = '2021-01-15'
+__VERSION__ = '1.2.3'
+__DATE__ = '2021-01-19'
 __MIN_PYTHON__ = (3, 7)
 
 
@@ -14,7 +14,17 @@ if sys.version_info < __MIN_PYTHON__:
     sys.exit('python {}.{} or later is required'.format(*__MIN_PYTHON__))
 
 
+class classproperty(object):
+    def __init__(self, f):
+        self.f = f
+
+    def __get__(self, obj, owner):
+        return self.f(owner)
+
+
 class AsyncioService(object):
+    _running_services = list()
+
     def __init__(self, *, name=None, **kwargs):
         super().__init__()
         if name:
@@ -25,6 +35,13 @@ class AsyncioService(object):
         self._task = None
         self.exception = None
 
+    @property
+    def loop(self):
+        return asyncio.get_running_loop()
+
+    def __repr__(self):
+        return f'<asyncio_service.AsyncioService object: {self.name}>'
+
     async def __aenter__(self):
         self.start()
         return self
@@ -33,9 +50,9 @@ class AsyncioService(object):
         await self.stop()
 
     def start(self):
-        loop = asyncio.get_running_loop()
+        AsyncioService._running_services.append(self)
         logger.info(f'starting service: {self.name}')
-        self._task = loop.create_task(self.run_wrapper())
+        self._task = self.loop.create_task(self.run_wrapper())
         return self._task
 
     async def stop(self):
@@ -58,6 +75,11 @@ class AsyncioService(object):
             await self.cleanup()
             logger.debug(f'service has stopped: {self.name}')
 
+            if self in AsyncioService._running_services:
+                AsyncioService._running_services.remove(self)
+            else:
+                logger.warning('this service was not found in AsyncioService._running_services [name={self.name}]')
+
     @abstractmethod
     async def run(self):
         pass
@@ -71,3 +93,15 @@ class AsyncioService(object):
 
     async def cleanup(self):
         pass
+
+    @classproperty
+    def running_services(cls):
+        return list(cls._running_services)
+
+    @classmethod
+    async def stop_all(cls):
+        futures = list()
+        for svc in cls.running_services:
+            futures.append(svc.stop())
+        await asyncio.wait(futures)
+        assert len(cls.running_services) == 0

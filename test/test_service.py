@@ -103,3 +103,21 @@ async def test_wait_for_running():
             assert t2.seconds >= .5
     assert t1.seconds >= 1
     assert service.name == 'pytest_service_wait_for_running'
+
+
+@pytest.mark.asyncio
+async def test_stop_all():
+    assert type(AsyncioService.running_services) is list
+    assert len(AsyncioService.running_services) == 0
+
+    tasks = list()
+    # init
+    for i in range(5):
+        s = _TestAsyncioService(name=f'_TestAsyncioService{i}')
+        tasks.append(s.start())
+
+    await asyncio.sleep(1)
+
+    assert len(AsyncioService.running_services) == 5
+    await AsyncioService.stop_all()
+    assert len(AsyncioService.running_services) == 0
