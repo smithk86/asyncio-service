@@ -6,8 +6,8 @@ from .service import AsyncioService
 
 
 logger = logging.getLogger(__name__)
-__VERSION__ = '1.2.4'
-__DATE__ = '2021-01-19'
+__VERSION__ = '1.2.5'
+__DATE__ = '2021-02-01'
 __MIN_PYTHON__ = (3, 7)
 __all__ = ['AsyncioService']
 

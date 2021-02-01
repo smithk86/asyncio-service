@@ -23,6 +23,9 @@ setup(
     packages=['asyncio_service'],
     license='MIT',
     python_requires='>=3.7',
+    install_requires=[
+        'pytz'
+    ],
     classifiers=(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",

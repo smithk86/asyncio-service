@@ -63,6 +63,7 @@ async def test_base():
     # start and allow to run
     task = service.start()
     assert type(service._task) is asyncio.Task
+    assert task is service._task
     await asyncio.sleep(3)
 
     # verify it is running
@@ -72,8 +73,7 @@ async def test_base():
     # stop and verify
     await service.stop()
     assert service.running() is False
-    assert service._task is None
-    assert task.done() is True
+    assert service._task.done() is True
 
     assert service.cleanup_has_been_called is True
     assert len(service.results) == 12
@@ -103,6 +103,11 @@ async def test_wait_for_running():
             assert t2.seconds >= .5
     assert t1.seconds >= 1
     assert service.name == 'pytest_service_wait_for_running'
+
+    # confirm start() throws RuntimeError is tried to be restarted
+    with pytest.raises(RuntimeError) as exc:
+        service.start()
+    assert str(exc.value) == 'task has already been started'
 
 
 @pytest.mark.asyncio

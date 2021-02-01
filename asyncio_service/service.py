@@ -1,9 +1,16 @@
 import asyncio
 import logging
 from abc import abstractmethod
+from datetime import datetime
+
+from pytz import utc
 
 
 logger = logging.getLogger(__name__)
+
+
+def now():
+    return utc.localize(datetime.utcnow())
 
 
 class classproperty(object):
@@ -16,6 +23,7 @@ class classproperty(object):
 
 class AsyncioService(object):
     _running_services = list()
+    _index = 0
 
     def __init__(self, *, name=None, **kwargs):
         super().__init__()
@@ -23,8 +31,9 @@ class AsyncioService(object):
             self.name = name
         else:
             self.name = self.__class__.__name__
-        self._running = None
         self._task = None
+        self.start_date = None
+        self.end_date = None
         self.exception = None
 
     @property
@@ -42,27 +51,30 @@ class AsyncioService(object):
         await self.stop()
 
     def start(self):
+        if self._task is not None:
+            raise RuntimeError('task has already been started')
+
         AsyncioService._running_services.append(self)
         logger.info(f'starting service: {self.name}')
-        self._task = self.loop.create_task(self.run_wrapper())
+        index = AsyncioService.get_next_index()
+        self._task = self.loop.create_task(self.run_wrapper(), name=f'AsyncioServiceTask-{index}')
         return self._task
 
     async def stop(self):
         if self._task:
             logger.warning(f'stopping service: {self.name}')
-            self._running = False
+            self.end_date = now()
             await self._task
-            self._task = None
 
     async def run_wrapper(self):
-        self._running = True
+        self.start_date = now()
         try:
             await self.run()
         except Exception as e:
             logger.exception(e)
             self.exception = e
         finally:
-            self._running = False
+            self.end_date = now()
             logger.debug(f'closing service: {self.name}')
             await self.cleanup()
             logger.debug(f'service has stopped: {self.name}')
@@ -77,7 +89,13 @@ class AsyncioService(object):
         pass
 
     def running(self):
-        return self._running
+        if self.start_date is None:
+            return None
+        else:
+            if self.end_date is None:
+                return True
+            else:
+                return False
 
     async def wait_for_running(self, interval=0.05):
         while self.running() is not True:
@@ -97,3 +115,10 @@ class AsyncioService(object):
             futures.append(svc.stop())
         await asyncio.wait(futures)
         assert len(cls.running_services) == 0
+
+    @classmethod
+    def get_next_index(cls):
+        try:
+            return cls._index
+        finally:
+            cls._index += 1
